@@ -1,4 +1,3 @@
-```markdown
 # Proyecto-API — API segura + Frontend (Docker)
 
 Proyecto de **API REST segura** (FastAPI) con frontend web y despliegue en contenedores. Incluye autenticación con JWT, control de acceso por roles (RBAC), conexión a PostgreSQL, integración con Keycloak, soporte MQTT y un conjunto de escaneos automáticos de seguridad con evidencias en `backend/reports/`.
@@ -15,11 +14,44 @@ Consulta la documentación en [Informe API Frontend.pdf](https://euneiz-my.share
 - `mosquitto/`: configuración del broker MQTT.
 - `raspberry_simulator/`: simulador MQTT para pruebas.
 - `others/`: documentación (modelo de amenazas, checklist OWASP/CWE, scripts de escaneo, etc.).
+## Instalación de Docker (si no lo tienes)
+
+Este proyecto requiere Docker y Docker Compose. Si no los tienes instalados, sigue las instrucciones:
+
+### Linux (Ubuntu/Debian)
+
+```bash
+# Actualizar paquetes
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg
+
+# Añadir repo oficial de Docker
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Instalar Docker
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Añadir usuario al grupo docker (para no usar sudo)
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Verificar instalación
+docker --version
+docker compose version
 
 ## Requisitos
+- **Sistema operativo:** Linux
 - **Docker** (versión 20.10+) y **Docker Compose** (v2.0+)
 - Permisos de ejecución en scripts: `chmod +x start_compose.sh start_compose_clean.sh`
-- Puertos libres: **80, 443** (Nginx), 5432 (PostgreSQL), 8080 (Keycloak), 1883 (Mosquitto)
+- Puertos libres: **80, 443**
 - **(Opcional)** Python 3.12+ para desarrollo local sin Docker
 
 ## Arranque rápido (Docker Compose)
@@ -30,15 +62,15 @@ Desde la raíz del repositorio:
 
 **Archivo de configuración requerido:** `backend/.env.production`
 
-```bash
 # Primer arranque o entorno limpio
+```bash
 ./start_compose_clean.sh
-
+```
 # Arranques posteriores (mantiene datos)
+```bash
 ./start_compose.sh
 ```
-
-## ⚠️ Primera ejecución y credenciales de administrador
+## Primera ejecución y credenciales de administrador
 
 ### Usuario administrador automático
 
@@ -48,14 +80,13 @@ En el **primer arranque** (base de datos limpia), el sistema genera automáticam
 - **Email:** `admin@kalimotxo.local`  
 - **Password:** Se genera aleatoriamente (16 caracteres seguros con mayúsculas, minúsculas, dígitos y símbolos)
 
-**La contraseña se muestra UNA ÚNICA VEZ por consola durante el arranque y se elimina del sistema inmediatamente después. GUÁRDALA en un gestor de contraseñas.**
+**La contraseña se muestra UNA ÚNICA VEZ por consola durante el arranque y se elimina del sistema inmediatamente después. Guardala de forma segura.**
 
 ### Inicialización paso a paso
 
 1. **Ejecuta el script de inicio:**
-   ```bash
-   ./start_compose_clean.sh
-   ```
+ '' ./start_compose_clean.sh ''
+
 
 2. **Observa los logs del contenedor `kalimotxo_api`**. Verás algo como:
    ```
@@ -106,7 +137,7 @@ El script `backend/app/core/auth/providers/init_keycloak.py` (se ejecuta automá
 
 El Swagger (`https://localhost/api/docs`) requiere autenticación mediante **Bearer Token JWT** obtenido de Keycloak.
 
-**⚠️ IMPORTANTE:** NO uses el `SECRET_KEY` del archivo `.env.production` como token. Debes obtener un JWT válido desde el endpoint de login.
+NO uses el `SECRET_KEY` del archivo `.env.production` como token. Debes obtener un JWT válido desde el endpoint de login.
 
 ### Cómo obtener un token JWT
 
@@ -124,7 +155,7 @@ El Swagger (`https://localhost/api/docs`) requiere autenticación mediante **Bea
    ```
 5. Haz clic en **"Execute"**
 6. Copia el valor de `access_token` de la respuesta JSON
-7. Haz clic en el botón **"Authorize"** (🔒 arriba a la derecha en Swagger)
+7. Haz clic en el botón **"Authorize"** (arriba a la derecha en Swagger)
 8. Pega el token en el campo `value` (solo el token, sin escribir "Bearer")
 9. Haz clic en **"Authorize"** y luego **"Close"**
 
@@ -153,8 +184,8 @@ curl -X GET https://localhost/api/users \
 
 ### Duración de los tokens
 
-- **Access token:** 5 minutos (configurable en Keycloak)
-- **Refresh token:** 30 minutos (configurable en Keycloak)
+- **Access token:** 5 minutos 
+- **Refresh token:** 30 minutos
 
 Si el access token expira, usa el endpoint `/auth/refresh` con el `refresh_token` para obtener un nuevo par de tokens sin necesidad de volver a hacer login.
 
